@@ -1,0 +1,50 @@
+version: "3"
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - FAST_REFRESH=false
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+    volumes:
+      - ./backend:/app
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - MONGODB_URI=mongodb://mongo:27017/mlops
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:4.4
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
